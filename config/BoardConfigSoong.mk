@@ -1,0 +1,30 @@
+PATH_OVERRIDE_SOONG := $(shell echo $(TOOLS_PATH_OVERRIDE))
+
+# Add variables that we wish to make available to soong here.
+EXPORT_TO_SOONG := \
+    KERNEL_ARCH \
+    KERNEL_BUILD_OUT_PREFIX \
+    KERNEL_CROSS_COMPILE \
+    KERNEL_MAKE_CMD \
+    KERNEL_MAKE_FLAGS \
+    KERNEL_PATH \
+    PATH_OVERRIDE_SOONG \
+    TARGET_KERNEL_CLANG_PATH \
+    TARGET_KERNEL_CONFIG \
+    TARGET_KERNEL_SOURCE \
+    TARGET_KERNEL_PLATFORM_TARGET \
+    TARGET_PREBUILT_KERNEL_HEADERS
+
+# Setup SOONG_CONFIG_* vars to export the vars listed above.
+# Documentation here:
+# https://github.com/LineageOS/android_build_soong/commit/8328367c44085b948c003116c0ed74a047237a69
+
+$(call add_soong_config_namespace,lineageVarsPlugin)
+$(foreach v,$(EXPORT_TO_SOONG),$(eval $(call add_soong_config_var,lineageVarsPlugin,$(v))))
+
+# NOTE (PenguinOS): the upstream Lineage/Axion BoardConfigSoong.mk continues here with
+# bootanimation/camera/charger/health/surfaceflinger/vendor-init soong_config blocks,
+# several of which $(error) out when the osm device tree still sets the (now deprecated)
+# TARGET_* vars they guard — aborting board-config parse. Only the kernel export above is
+# needed for the in-tree kernel build (BoardConfigKernel + generated_kernel_includes for the
+# external modules), so the rest is intentionally dropped.
